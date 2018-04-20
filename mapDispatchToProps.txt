@@ -1,0 +1,73 @@
+mapDispatchToProps
+
+  es una función que te deja especificar qué acciones quieres exponer a tu componente como props 
+
+    (se parece en este modo a mapStateToProps, pero en vez de partes del estado de redux exponiendose al componente, se hablan de acciones)
+
+  como parametro recibe la función dispatch
+
+  retorna los props que quieres pasar a tu componente
+
+    function mapDispatchToProps(dispatch){
+      return {
+        actions : bindActionsCreators(actions, dispatch)
+      };
+    };
+
+    la función bindActionsCreators es parte de redux
+
+      para entenderlo mejor, debes recordar las 3 maneras que hay de pasar acciones a los componentes usando redux
+
+        hay 3 maneras de manejar el mapeo de las acciones a los props en tus containers
+
+          ** algo que siempre tienes que recordar es que lo que se le pasa de parámetro a la función dispatch tiene que ser un actionCreator (sucede finalmente eso en los 3 metodos)
+
+        1. Ignorando a la función mapDispatchToProps (porque es opcional)
+
+          el helper connect no exige necesariamente el segundo parametro.
+          
+          *cuando connect no recibe un segundo parametro, deja en props a la función dispatch. De esta manera, puedes llamar a tus acciones con dispatch en el componente manualmente.. así:
+
+            this.props.dispatch(loadCourses());
+
+              lo que se le pasa a dispatch es un actionCreator (funciones que retornan objetos)
+                * en este caso, 'loadCourses' es un actionCreator
+
+              lo malo de este approach es que si tienes componentes hijos, ellos necesitarán importar algunas cosas (actionCreators) de redux para poder llamar a la función dispatch. con los otros approachs, esto no ocurre.
+
+        2. Manualmente envolver tus actionCreators en dispatch calls ( se hace en mapDispatchToProps)
+
+          siguiendo el ejemplo anterior, sería así:
+
+            function mapDispatchToProps(dispatch){
+              return {
+                loadCourses : () => {
+                  dispatch(loadCourses());
+                }
+              }
+            }
+            // se invoca al actionCreator y eso se pasa a dispatch. luego se agrega al key, que finalmente seria lo que estaría como props en tu componente
+
+            la ventaja es que luego se pueden llamar mas facilmente a las acciones en el componente
+
+              this.props.loadCourses(); 
+
+            la desventaja es que es un poco redundante (tienes que escribir el nombre de tus actionCreators varias veces) 
+
+        3. Usando la función helper bindActionsCreators
+
+          bindActionsCreators es una funcion helper que envuelve tus actionCreators en dispatch calls para ti (te ahorra el trabajo). sería así:
+
+            function mapDispatchToProps(dispatch){
+              return {
+                actions : bindActionsCreators(actions, dispatch)
+              };
+            };
+            
+            la ventaja es que te evita la redundancia de estar envolviendo manualmente cada una de tus acciones en dispatch calls. así evitas escribir más código.
+
+            la desventaja es que el uso de esta función puede no ser tan entendible al inicio
+            
+            otra desventaja es que tendrías que llamar a las acciones de una manera distinta
+
+              this.props.actions.loadCourses();          
